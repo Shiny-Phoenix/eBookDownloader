@@ -27,21 +27,22 @@ search_url = "http://libgen.li/search.php?req=" + \
     BOOK.replace(" ", "+")  # url to get search results
 search_results = []
 session = Session()
-run = True
 
 
 def print_loading(text):
     """
         A function to print text with a loading animation
     """
-    global run
+    global run_anim
     animations = [text+"|", text+"/", text+"-", text+"\\"]
-    while run:
+    while run_anim:
         for anim in animations:
             print(anim, end="\r", flush=True)
             sleep(0.15)
 
 
+# Starting the searching animation
+run_anim = True
 Thread(target=print_loading, args=("Searching",), daemon=True).start()
 
 # Visiting the search_url and grabbing the results part from the page
@@ -74,8 +75,8 @@ for result in results:
     search_results.append(
         Book(author, name, download_link, size, length, extension))
 
-# Stopping the seraching animation
-run = False
+# Stopping the searching animation
+run_anim = False
 sleep(0.75)
 
 # Exiting if no results were found
@@ -98,8 +99,10 @@ for index, book in enumerate(search_results):
 
 download_index = int(input("Index of the book to download: "))-1
 
-run = True
+# Starting a loading animation
+run_anim = True
 Thread(target=print_loading, args=("Fetching",), daemon=True).start()
+
 # Finding the final download link after going through two pages
 page = session.get("http://libgen.li/" +
                    search_results[download_index].download_link).content
@@ -110,8 +113,10 @@ page = session.get("http://libgen.li/"+download_link).content
 soup = BeautifulSoup(page, 'lxml')
 download_link = soup.find("a")['href']
 
-run = False
+# Stopping the loading animation
+run_anim = False
 sleep(0.75)
+
 # Downloading the book
 with session.get(download_link, stream=True) as file:
     total_size = int(file.headers['content-length'])
