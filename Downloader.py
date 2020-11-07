@@ -77,7 +77,7 @@ for result in results:
 
 # Stopping the searching animation
 run_anim = False
-sleep(0.75)
+sleep(0.7)
 
 # Exiting if no results were found
 if len(search_results) == 0:
@@ -115,7 +115,7 @@ download_link = soup.find("a")['href']
 
 # Stopping the loading animation
 run_anim = False
-sleep(0.75)
+sleep(0.7)
 
 # Downloading the book
 with session.get(download_link, stream=True) as file:
@@ -136,4 +136,4 @@ with session.get(download_link, stream=True) as file:
                 ".")+2]
             print("Downloading "+downloaded_percent+"%", end="\r", flush=True)
 
-print(BOOK+extension+" Downloaded.")
+print("\n"+BOOK+extension+" Downloaded.")
