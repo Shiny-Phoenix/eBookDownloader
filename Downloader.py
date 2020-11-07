@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 from requests import Session
+from requests.exceptions import ConnectionError
 from bs4 import BeautifulSoup
 from time import sleep
 from threading import Thread
@@ -41,12 +42,24 @@ def print_loading(text):
             sleep(0.15)
 
 
+def get_webpage(url):
+    try:
+        return session.get(url)
+    except ConnectionError:
+        global run_anim
+        run_anim = False
+        sleep(0.65)
+        print("Looks like you are offline.")
+        sleep(2)
+        exit()
+
+
 # Starting the searching animation
 run_anim = True
 Thread(target=print_loading, args=("Searching",), daemon=True).start()
 
 # Visiting the search_url and grabbing the results part from the page
-page = session.get(search_url).content
+page = get_webpage(search_url).content
 soup = BeautifulSoup(page, 'lxml')
 results_part = soup.find("table", {"class": "c"})
 results = results_part.find_all("tr", recursive=False)
@@ -104,12 +117,12 @@ run_anim = True
 Thread(target=print_loading, args=("Fetching",), daemon=True).start()
 
 # Finding the final download link after going through two pages
-page = session.get("http://libgen.li/" +
+page = get_webpage("http://libgen.li/" +
                    search_results[download_index].download_link).content
 soup = BeautifulSoup(page, 'lxml')
 table = soup.find("table", {"border": 0, "width": "100%"})
 download_link = table.find("a")['href']
-page = session.get("http://libgen.li/"+download_link).content
+page = get_webpage("http://libgen.li/"+download_link).content
 soup = BeautifulSoup(page, 'lxml')
 download_link = soup.find("a")['href']
 
