@@ -17,9 +17,9 @@ class Book:
         self.extension = extension  # .pdf,.epub etc
 
 
-def exit_cleanly(text):
+def exit_cleanly(text, time_out=2):
     print(text)
-    sleep(2)
+    sleep(time_out)
     exit()
 
 
@@ -56,10 +56,16 @@ def search_for_book(search_url):
     """
     page = get_webpage(search_url).content
     soup = BeautifulSoup(page, 'lxml')
+
     # The table in which results are stored.
     results_part = soup.find("table", {"class": "c"})
-    results = results_part.find_all("tr", recursive=False)
-
+    try:
+        results = results_part.find_all("tr", recursive=False)
+    except AttributeError:
+        global run_anim
+        run_anim = False
+        sleep(0.175)
+        exit_cleanly(soup.get_text(), 10)
     for result in results:
         if result.attrs['bgcolor'] == "#C0C0C0":  # Ignoring the Header of the table
             continue
@@ -160,8 +166,7 @@ if __name__ == "__main__":
 
     # Exiting if no results were found
     if len(search_results) == 0:
-        print("No results Found.")
-        exit()
+        exit_cleanly("No results found.")
 
     print(str(len(search_results))+" books found.\n")
     present_results()
