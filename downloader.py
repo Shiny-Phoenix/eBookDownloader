@@ -182,8 +182,10 @@ if __name__ == "__main__":
             "The length of the search string must be greater than 3 characters.")
 
     search_results = []
-    session = Session()
-
+    try:
+        session = Session()
+    except NameError:
+        exit_cleanly("Unkown error occured while installing requests module.")
     # Starting the searching animation
     run_anim = True
     search_thread = Thread(target=print_loading,
