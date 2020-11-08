@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 from requests import Session
+from os import name, system
 from requests.exceptions import ConnectionError
 from bs4 import BeautifulSoup
 from time import sleep
@@ -17,7 +18,17 @@ class Book:
         self.extension = extension  # .pdf,.epub etc
 
 
-def exit_cleanly(text, time_out=2):
+def clear_screen():
+    if name == 'posix':
+        system('clear')
+    elif name == 'nt':
+        system('cls')
+
+
+def exit_cleanly(text, time_out=3):
+    global run_anim
+    run_anim = False
+    sleep(0.175)
     print(text)
     sleep(time_out)
     exit()
@@ -44,16 +55,17 @@ def get_webpage(url):
     try:
         return session.get(url)
     except ConnectionError:
-        global run_anim
-        run_anim = False
-        sleep(0.175)
         exit_cleanly("Looks like you are oflline.")
 
 
-def search_for_book(search_url):
+def search_for_book(query):
     """
-        Visits the search_url and finds all the results
+        searches for the query and stores the results in a list
     """
+
+    search_url = "http://libgen.li/search.php?req=" + \
+        query.replace(" ", "+")  # url to get search results
+
     page = get_webpage(search_url).content
     soup = BeautifulSoup(page, 'lxml')
 
@@ -62,9 +74,6 @@ def search_for_book(search_url):
     try:
         results = results_part.find_all("tr", recursive=False)
     except AttributeError:
-        global run_anim
-        run_anim = False
-        sleep(0.175)
         exit_cleanly(soup.get_text(), 10)
     for result in results:
         if result.attrs['bgcolor'] == "#C0C0C0":  # Ignoring the Header of the table
@@ -143,58 +152,65 @@ def download(url, file_name):
 
 
 if __name__ == "__main__":
-    query = input("Search(minimum 3 characters): ")  # The book to be searched
+    while True:
+        # The book to be searched
+        query = input("Search(minimum 3 characters): ")
 
-    if len(query) < 3:
-        exit_cleanly(
-            "The length of the search string must be greater than 3 characters.")
+        if len(query) < 3:
+            exit_cleanly(
+                "The length of the search string must be greater than 3 characters.")
 
-    search_url = "http://libgen.li/search.php?req=" + \
-        query.replace(" ", "+")  # url to get search results
-    search_results = []
-    session = Session()
+        search_results = []
+        session = Session()
 
-    # Starting the searching animation
-    run_anim = True
-    Thread(target=print_loading, args=("Searching",), daemon=True).start()
+        # Starting the searching animation
+        run_anim = True
+        search_thread = Thread(target=print_loading,
+                               args=("Searching",), daemon=True)
+        search_thread.start()
 
-    search_for_book(search_url)
+        search_for_book(query)
 
-    # Stopping the searching animation
-    run_anim = False
-    sleep(0.175)
+        # Stopping the searching animation
+        run_anim = False
+        search_thread.join()
 
-    # Exiting if no results were found
-    if len(search_results) == 0:
-        exit_cleanly("No results found.")
+        # Exiting if no results were found
+        if len(search_results) == 0:
+            exit_cleanly("No results found.")
 
-    print(str(len(search_results))+" books found.\n")
-    present_results()
+        print(str(len(search_results))+" books found.\n")
 
-    try:
-        download_index = int(input("Index of the book to download: "))-1
-    except ValueError:
-        exit_cleanly(
-            "You should enter the number under the 'Index' section of the book and not some text.")
+        present_results()
 
-    # Starting a loading animation
-    run_anim = True
-    Thread(target=print_loading, args=("Fetching",), daemon=True).start()
+        try:
+            download_index = int(input("Index of the book to download: "))-1
+        except ValueError:
+            exit_cleanly(
+                "You should enter the number under the 'Index' section of the book and not some text.")
 
-    try:
-        download_link = get_final_download_link(
-            search_results[download_index].download_link)
-    except IndexError:
-        exit_cleanly(
-            "Looks like you entered an index larger than the number of search results.")
+        clear_screen()
 
-    # Stopping the loading animation
-    run_anim = False
-    sleep(0.175)
+        # Starting a loading animation
+        run_anim = True
+        fetch_thread = Thread(target=print_loading,
+                              args=("Fetching",), daemon=True)
+        fetch_thread.start()
 
-    # Downloading the book selected
-    extension = search_results[download_index].extension
-    name = query.replace(" ", "")
-    file_name = name+extension
-    download(download_link, file_name)
-    print("\n"+file_name+" Downloaded.")
+        try:
+            download_link = get_final_download_link(
+                search_results[download_index].download_link)
+        except IndexError:
+            exit_cleanly(
+                "Looks like you entered an index larger than the number of search results.")
+
+        # Stopping the loading animation
+        run_anim = False
+        fetch_thread.join()
+
+        # Downloading the book selected
+        extension = search_results[download_index].extension
+        name = query.replace(" ", "")
+        file_name = name+extension
+        download(download_link, file_name)
+        print("\n"+file_name+" Downloaded.\n")
