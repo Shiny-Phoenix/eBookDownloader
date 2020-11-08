@@ -1,13 +1,13 @@
 #!/usr/bin/python3
-import subprocess
-import sys
+
 from time import sleep
 from threading import Thread
-from os import name, system
 import readline
 
 
 def install(package):
+    import subprocess
+    import sys
     try:
         subprocess.call([sys.executable, "-m", "pip",
                          "install", package])
@@ -22,10 +22,13 @@ try:
     from requests.exceptions import ConnectionError
 except ModuleNotFoundError:
     install("requests")
+    from requests import Session
+    from requests.exceptions import ConnectionError
 try:
     from bs4 import BeautifulSoup
 except ModuleNotFoundError:
     install("beautifulsoup4")
+    from bs4 import BeautifulSoup
 
 
 class Book:
@@ -36,13 +39,6 @@ class Book:
         self.size = size
         self.length = length
         self.extension = extension  # .pdf,.epub etc
-
-
-def clear_screen():
-    if name == 'posix':
-        system('clear')
-    elif name == 'nt':
-        system('cls')
 
 
 def exit_cleanly(text, time_out=3):
@@ -62,7 +58,7 @@ def print_loading(text):
     animations = [text+"|", text+"/", text+"-", text+"\\"]
     while True:
         for anim in animations:
-            print(anim, end=+80*" "+"\r", flush=True)
+            print(anim, end=+10*" "+"\r", flush=True)
             if not run_anim:
                 return
             sleep(0.15)
@@ -170,7 +166,7 @@ def download(url, file_name):
                 downloaded_percent = downloaded_percent[:downloaded_percent.find(
                     ".")+2]
                 print("Downloading "+downloaded_percent +
-                      "%", end=80*" "+"\r", flush=True)
+                      "%", end=10*" "+"\r", flush=True)
 
 
 if __name__ == "__main__":
@@ -211,8 +207,6 @@ if __name__ == "__main__":
     except ValueError:
         exit_cleanly(
             "You should enter the number under the 'Index' section of the book and not some text.")
-
-    clear_screen()
 
     # Starting a loading animation
     run_anim = True
