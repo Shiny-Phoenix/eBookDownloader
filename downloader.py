@@ -1,11 +1,22 @@
-#!/usr/bin/python3
-from requests import Session
-from os import name, system
-from requests.exceptions import ConnectionError
-from bs4 import BeautifulSoup
+#!/usr/bin/python3n
+import subprocess
+import sys
 from time import sleep
 from threading import Thread
+from os import name, system
 import readline
+from requests import Session
+from requests.exceptions import ConnectionError
+try:
+    from bs4 import BeautifulSoup
+except ModuleNotFoundError:
+    try:
+        subprocess.call([sys.executable, "-m", "pip",
+                         "install", "beautifulsoup4"])
+    except:
+        print("Looks like you don't have pip installed.")
+        sleep(2)
+        exit()
 
 
 class Book:
