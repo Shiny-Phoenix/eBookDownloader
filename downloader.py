@@ -2,7 +2,10 @@
 
 from time import sleep
 from threading import Thread
-import readline
+try:
+    import readline
+except:
+    pass
 
 
 def install(package):
@@ -22,13 +25,23 @@ try:
     from requests.exceptions import ConnectionError
 except ModuleNotFoundError:
     install("requests")
-    from requests import Session
-    from requests.exceptions import ConnectionError
+    try:
+        from requests import Session
+        from requests.exceptions import ConnectionError
+    except ModuleNotFoundError:
+        print("Unknown error occured while installing requests.")
+        sleep(2)
+        exit()
 try:
     from bs4 import BeautifulSoup
 except ModuleNotFoundError:
     install("beautifulsoup4")
-    from bs4 import BeautifulSoup
+    try:
+        from bs4 import BeautifulSoup
+    except ModuleNotFoundError:
+        print("Unknown error occured while installing beautifulsoup4")
+        sleep(2)
+        exit()
 
 
 class Book:
@@ -74,9 +87,6 @@ def get_soup(url):
         return soup
     except ConnectionError:
         exit_cleanly("Looks like you are oflline.")
-    except NameError:
-        exit_cleanly(
-            "Unkown Error had occured while installing beautifulsoup4.", 5)
 
 
 def search_for_book(query):
@@ -178,10 +188,7 @@ if __name__ == "__main__":
             "The length of the search string must be greater than 3 characters.")
 
     search_results = []
-    try:
-        session = Session()
-    except NameError:
-        exit_cleanly("Unkown error occured while installing requests module.")
+    session = Session()
     # Starting the searching animation
     run_anim = True
     search_thread = Thread(target=print_loading,
