@@ -12,7 +12,7 @@ def install(package):
     import subprocess
     import sys
     try:
-        subprocess.call([sys.executable, "-m", "pip",
+        subprocess.call([sys.executable, "-m", "pip", "-q",
                          "install", package])
     except:
         print("Looks like you don't have pip installed.")
@@ -32,6 +32,18 @@ except ModuleNotFoundError:
         print("Unknown error occured while installing requests.")
         sleep(2)
         exit()
+
+try:
+    import lxml
+except ModuleNotFoundError:
+    install("lxml")
+    try:
+        import lxml
+    except ModuleNotFoundError:
+        print("Unknown error occured while installing lxml.")
+        sleep(2)
+        exit()
+
 try:
     from bs4 import BeautifulSoup
 except ModuleNotFoundError:
@@ -39,7 +51,7 @@ except ModuleNotFoundError:
     try:
         from bs4 import BeautifulSoup
     except ModuleNotFoundError:
-        print("Unknown error occured while installing beautifulsoup4")
+        print("Unknown error occured while installing beautifulsoup4.")
         sleep(2)
         exit()
 
