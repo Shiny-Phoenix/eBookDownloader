@@ -221,32 +221,33 @@ if __name__ == "__main__":
 
     present_results()
 
-    try:
-        download_index = int(input("Index of the book to download: "))-1
-    except ValueError:
-        exit_cleanly(
-            "You should enter the number under the 'Index' section of the book and not some text.")
+    while True:
+        try:
+            download_index = int(input("Index of the book to download: "))-1
+        except ValueError:
+            exit_cleanly(
+                "You should enter the number under the 'Index' section of the book and not some text.")
 
-    # Starting a loading animation
-    run_anim = True
-    fetch_thread = Thread(target=print_loading,
-                          args=("Fetching",), daemon=True)
-    fetch_thread.start()
+        # Starting a loading animation
+        run_anim = True
+        fetch_thread = Thread(target=print_loading,
+                              args=("Fetching",), daemon=True)
+        fetch_thread.start()
 
-    try:
-        download_link = get_final_download_link(
-            search_results[download_index].download_link)
-    except IndexError:
-        exit_cleanly(
-            "Looks like you entered an index larger than the number of search results.")
+        try:
+            download_link = get_final_download_link(
+                search_results[download_index].download_link)
+        except IndexError:
+            exit_cleanly(
+                "Looks like you entered an index larger than the number of search results.")
 
-    # Stopping the loading animation
-    run_anim = False
-    fetch_thread.join()
+        # Stopping the loading animation
+        run_anim = False
+        fetch_thread.join()
 
-    # Downloading the book selected
-    extension = search_results[download_index].extension
-    name = query.replace(" ", "")
-    file_name = name+extension
-    download(download_link, file_name)
-    print("\n"+file_name+" Downloaded.\n")
+        # Downloading the book selected
+        extension = search_results[download_index].extension
+        name = search_results[download_index].name
+        file_name = name+extension
+        download(download_link, file_name)
+        print("\n"+file_name+" Downloaded.\n")
