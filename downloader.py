@@ -57,12 +57,13 @@ except ModuleNotFoundError:
 
 
 class Book:
-    def __init__(self, author, name, download_link, size, length, extension):
+    def __init__(self, author, name, download_link, size, length, language, extension):
         self.author = author
         self.name = name
         self.download_link = download_link
         self.size = size
         self.length = length
+        self.language = language
         self.extension = extension  # .pdf,.epub etc
 
 
@@ -123,8 +124,6 @@ def search_for_book(query):
         # Columns in which information about the book is stored
         columns = result.find_all("td", recursive=False)
         language = columns[6].get_text()
-        if language != "English":
-            continue
         name_column = columns[2].find_all("a")
         name = name_column[-1].get_text()
         redundant_text = []  # A list that stores all the useless part of the name
@@ -139,7 +138,7 @@ def search_for_book(query):
         length = columns[5].get_text()
         extension = "."+columns[8].get_text()
         search_results.append(
-            Book(author, name, download_link, size, length, extension))
+            Book(author, name, download_link, size, length, language, extension))
 
 
 def present_results():
@@ -152,6 +151,7 @@ def present_results():
         print(f"Name: {book.name}")
         print(f"Size: {book.size}")
         print(f"Length: {book.length}")
+        print(f"Language: {book.language}")
         print(f"Format: {book.extension}")
         print("\n")
 
